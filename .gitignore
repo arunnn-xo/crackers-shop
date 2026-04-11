@@ -1,0 +1,8 @@
+
+/panel/node_modules
+/backend/node_modules
+/backend/.env
+/panel/.env
+/panel/dist
+/panel/dist-ssr
+/panel/node_modules
