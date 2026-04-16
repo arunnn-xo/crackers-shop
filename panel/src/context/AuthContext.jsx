@@ -1,36 +1,60 @@
 import { createContext, useContext, useState } from 'react';
+import { apiRequest } from '../lib/api';
 
 const AuthContext = createContext();
 
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@gmail.com';
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'crackers';
+const TOKEN_KEY = 'authToken';
+const USER_KEY = 'authUser';
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
+  const [user, setUser] = useState(() => {
+    const rawUser = localStorage.getItem(USER_KEY);
+    return rawUser ? JSON.parse(rawUser) : null;
   });
 
-  // Only validates credentials — does NOT set auth state yet
-  const validateLogin = (email, password) => {
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      return { success: true };
+  const isAuthenticated = Boolean(token);
+
+  const validateLogin = async (email, password) => {
+    try {
+      const response = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: { email, password },
+      });
+
+      return {
+        success: true,
+        token: response.token,
+        user: response.user,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Login failed.',
+      };
     }
-    return { success: false, message: 'Invalid email or password.' };
   };
 
-  // Called AFTER animation finishes to actually log in
-  const completeLogin = () => {
-    setIsAuthenticated(true);
-    localStorage.setItem('isLoggedIn', 'true');
+  const completeLogin = (authData) => {
+    if (!authData?.token) {
+      return;
+    }
+
+    setToken(authData.token);
+    setUser(authData.user || null);
+    localStorage.setItem(TOKEN_KEY, authData.token);
+    localStorage.setItem(USER_KEY, JSON.stringify(authData.user || null));
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('isLoggedIn');
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, validateLogin, completeLogin, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, user, validateLogin, completeLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );

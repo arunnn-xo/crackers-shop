@@ -115,14 +115,14 @@ export default function LoginPage({ onValidate, onLoginComplete }) {
     };
   }, []);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     
-    setTimeout(() => {
+    setTimeout(async () => {
       // Step 1: Only validate credentials (does NOT change auth state)
-      const result = onValidate(email, password);
+      const result = await onValidate(email, password);
       if (result && !result.success) {
         setError(result.message);
         setIsLoading(false);
@@ -140,7 +140,7 @@ export default function LoginPage({ onValidate, onLoginComplete }) {
       
       // Step 4: After blast animation completes, THEN actually log in
       setTimeout(() => {
-        onLoginComplete();
+        onLoginComplete(result);
       }, 2400);
     }, 500); 
   };
@@ -245,16 +245,6 @@ export default function LoginPage({ onValidate, onLoginComplete }) {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-            </div>
-
-            <div className="flex items-center justify-between pb-4 pt-1">
-              <label className="flex items-center gap-2.5 cursor-pointer group">
-                <div className="w-4 h-4 rounded border border-white/30 bg-white/[0.08] flex items-center justify-center group-hover:border-amber-500 transition-colors">
-                  <Check className="w-3 h-3 text-amber-400 opacity-100" />
-                </div>
-                <span className="text-sm font-medium text-slate-200">Remember me</span>
-              </label>
-              <a href="#" className="text-sm font-medium text-amber-500 hover:text-amber-400 transition-colors">Recovery?</a>
             </div>
 
             <button 

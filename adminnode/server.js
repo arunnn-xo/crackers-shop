@@ -25,14 +25,27 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ==========================================
 // API ROUTES
 // ==========================================
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/dashboard', require('./routes/dashboard'));
-app.use('/api/categories', require('./routes/categories'));
-app.use('/api/products', require('./routes/products'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/customers', require('./routes/customers'));
-app.use('/api/banners', require('./routes/banners'));
-app.use('/api/settings', require('./routes/settings'));
+const apiKeyAuth = require('./middleware/apiKeyAuth');
+
+const registerApiRoute = (paths, routePath) => {
+  const router = require(routePath);
+  paths.forEach((apiPath) => {
+    if (apiPath.includes('Get')) {
+      app.use(apiPath, apiKeyAuth, router);
+    } else {
+      app.use(apiPath, router);
+    }
+  });
+};
+
+registerApiRoute(['/api/auth'], './routes/auth');
+registerApiRoute(['/api/dashboard', '/api/Getdashboard'], './routes/dashboard');
+registerApiRoute(['/api/categories', '/api/Getcategories'], './routes/categories');
+registerApiRoute(['/api/products', '/api/Getproducts'], './routes/products');
+registerApiRoute(['/api/orders', '/api/Getorders'], './routes/orders');
+registerApiRoute(['/api/customers', '/api/Getcustomers'], './routes/customers');
+registerApiRoute(['/api/banners', '/api/Getbanners'], './routes/banners');
+registerApiRoute(['/api/settings', '/api/Getsettings'], './routes/settings');
 
 // ==========================================
 // HEALTH CHECK

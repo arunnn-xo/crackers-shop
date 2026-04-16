@@ -252,7 +252,7 @@ CREATE TABLE IF NOT EXISTS store_config (
 
 -- Default Admin User (password: admin123)
 INSERT IGNORE INTO admin_users (name, email, password, role) VALUES
-('System Admin', 'admin@sparkle.com', '$2b$10$YourHashedPasswordHere', 'admin');
+('System Admin', 'admin@sparkle.com', '$2a$10$jzK9XCmwfei1hpgJWfMELehybCL9xbNSMWtmZe7jN/ZfoBrlgqQQm', 'admin');
 
 -- Default Order Statuses
 INSERT IGNORE INTO order_statuses (name, sort_order) VALUES

@@ -16,13 +16,22 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/banners
-router.post('/', auth, upload.single('image'), async (req, res) => {
+router.post('/', auth, upload.handleErrors('image'), async (req, res) => {
   try {
-    const { name, link, sort_order } = req.body;
+    const { name, link, sort_order, is_active } = req.body;
+
+    if (!name?.trim()) {
+      return res.status(400).json({ success: false, message: 'Banner name is required.' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Banner image is required.' });
+    }
+
     const image = req.file ? `/uploads/${req.file.filename}` : null;
     const [result] = await pool.query(
-      'INSERT INTO banners (name, image, link, sort_order) VALUES (?, ?, ?, ?)',
-      [name, image, link, sort_order || 0]
+      'INSERT INTO banners (name, image, link, sort_order, is_active) VALUES (?, ?, ?, ?, ?)',
+      [name.trim(), image, link?.trim() || null, Number(sort_order) || 0, Number(is_active ?? 1)]
     );
     res.status(201).json({ success: true, message: 'Banner created', id: result.insertId });
   } catch (error) {
@@ -31,11 +40,16 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 });
 
 // PUT /api/banners/:id
-router.put('/:id', auth, upload.single('image'), async (req, res) => {
+router.put('/:id', auth, upload.handleErrors('image'), async (req, res) => {
   try {
     const { name, link, sort_order, is_active } = req.body;
+
+    if (!name?.trim()) {
+      return res.status(400).json({ success: false, message: 'Banner name is required.' });
+    }
+
     let query = 'UPDATE banners SET name=?, link=?, sort_order=?, is_active=?';
-    const params = [name, link, sort_order, is_active];
+    const params = [name.trim(), link?.trim() || null, Number(sort_order) || 0, Number(is_active ?? 1)];
 
     if (req.file) {
       query += ', image=?';

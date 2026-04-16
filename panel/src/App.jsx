@@ -8,13 +8,19 @@ import LoginPage from './pages/auth/LoginPage';
 // Pages
 import DashboardPage from './pages/dashboard/DashboardPage';
 import BannersPage from './pages/website/BannersPage';
+import BannerFormPage from './pages/website/BannerFormPage';
 import CategoriesPage from './pages/website/CategoriesPage';
+import CategoryFormPage from './pages/website/CategoryFormPage';
 import ProductsPage from './pages/website/ProductsPage';
+import ProductFormPage from './pages/website/ProductFormPage';
 import CustomersPage from './pages/website/CustomersPage';
+import CustomerFormPage from './pages/website/CustomerFormPage';
 import GeographyPage from './pages/website/GeographyPage';
 import OnOffStatusPage from './pages/orders/OnOffStatusPage';
 import BillingInvoicesPage from './pages/orders/BillingInvoicesPage';
+import BillingInvoiceFormPage from './pages/orders/BillingInvoiceFormPage';
 import OrderStatusPage from './pages/orders/OrderStatusPage';
+import OrderStatusFormPage from './pages/orders/OrderStatusFormPage';
 import TodayOrdersPage from './pages/orders/TodayOrdersPage';
 import AllOrdersPage from './pages/orders/AllOrdersPage';
 import TopCustomersPage from './pages/report/TopCustomersPage';
@@ -46,15 +52,27 @@ function AppContent() {
             
           {/* Website Routes */}
           <Route path="/website/banners" element={<BannersPage />} />
+          <Route path="/website/banners/new" element={<BannerFormPage />} />
+          <Route path="/website/banners/:bannerId/edit" element={<BannerFormPage />} />
           <Route path="/website/categories" element={<CategoriesPage />} />
+          <Route path="/website/categories/new" element={<CategoryFormPage />} />
+          <Route path="/website/categories/:categoryId/edit" element={<CategoryFormPage />} />
           <Route path="/website/products" element={<ProductsPage />} />
+          <Route path="/website/products/new" element={<ProductFormPage />} />
+          <Route path="/website/products/:productId/edit" element={<ProductFormPage />} />
           <Route path="/website/customers" element={<CustomersPage />} />
+          <Route path="/website/customers/new" element={<CustomerFormPage />} />
+          <Route path="/website/customers/:customerId/edit" element={<CustomerFormPage />} />
           <Route path="/website/geography" element={<GeographyPage />} />
           
           {/* Orders Routes */}
           <Route path="/orders/status-toggle" element={<OnOffStatusPage />} />
           <Route path="/orders/billing" element={<BillingInvoicesPage />} />
+          <Route path="/orders/billing/new" element={<BillingInvoiceFormPage />} />
+          <Route path="/orders/billing/:invoiceId/edit" element={<BillingInvoiceFormPage />} />
           <Route path="/orders/status" element={<OrderStatusPage />} />
+          <Route path="/orders/status/new" element={<OrderStatusFormPage />} />
+          <Route path="/orders/status/:statusId/edit" element={<OrderStatusFormPage />} />
           <Route path="/orders/today" element={<TodayOrdersPage />} />
           <Route path="/orders/all" element={<AllOrdersPage />} />
           

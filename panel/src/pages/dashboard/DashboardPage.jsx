@@ -1,120 +1,434 @@
-import { useMemo } from 'react';
-import { 
-  LayoutDashboard, List, Image as ImageIcon, Package, ShoppingBag, 
-  IndianRupee, Award, Box, Users, MoreVertical, Plus, Clock, 
-  TrendingUp, PieChart as PieChartIcon
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Clock,
+  IndianRupee,
+  LayoutDashboard,
+  List,
+  LoaderCircle,
+  Package,
+  PieChart as PieChartIcon,
+  Plus,
+  ShoppingBag,
+  TrendingUp,
+  Users,
+  Image as ImageIcon,
+  Eye,
+  Award,
 } from 'lucide-react';
-import { 
-  LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, 
-  CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer 
+import {
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
 import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { COLORS } from '../../data/constants';
-import { MOCK_ORDERS, MOCK_CUSTOMERS, REVENUE_DATA, ORDER_STATUS_DATA } from '../../data/mockData';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { DataTable } from '../../components/ui/DataTable';
+import { apiRequest } from '../../lib/api';
+
+const CHART_COLORS = [...Object.values(COLORS), '#10b981', '#f97316', '#6366f1'];
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0));
+
+const formatDate = (value, withTime = false) => {
+  if (!value) {
+    return '-';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('en-IN', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+  }).format(date);
+};
+
+const getInitials = (name = '') =>
+  name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() || '')
+    .join('') || 'CU';
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
+  const { addToast } = useToast();
   const { isDark } = useTheme();
+  const [dashboardData, setDashboardData] = useState({
+    stats: {
+      totalCategories: 0,
+      totalBanners: 0,
+      globalDiscount: 0,
+      totalProducts: 0,
+      totalOrders: 0,
+      totalIncome: 0,
+      totalCustomers: 0,
+    },
+    revenueData: [],
+    statusData: [],
+    recentOrders: [],
+    newCustomers: [],
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const tooltipStyle = {
     backgroundColor: isDark ? '#13131a' : '#ffffff',
     borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0',
     borderRadius: '8px',
-    color: isDark ? '#f8fafc' : '#0f172a'
+    color: isDark ? '#f8fafc' : '#0f172a',
   };
 
-  const stats = [
-    { title: 'Total Categories', value: '24', icon: List, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-100 dark:bg-purple-500/20' },
-    { title: 'Total Banners', value: '6', icon: ImageIcon, color: 'text-pink-600 dark:text-pink-400', bg: 'bg-pink-100 dark:bg-pink-500/20' },
-    { title: 'Global Discount', value: '15%', icon: Award, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-500/20' },
-    { title: 'Total Products', value: '142', icon: Package, color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-100 dark:bg-cyan-500/20' },
-    { title: 'Total Orders', value: '1,284', icon: ShoppingBag, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-500/20' },
-    { title: 'Total Income', value: '₹ 45.2L', icon: IndianRupee, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-500/20' },
-  ];
+  const loadDashboard = useCallback(
+    async ({ showLoader = false } = {}) => {
+      try {
+        if (showLoader) {
+          setIsLoading(true);
+        } else {
+          setIsRefreshing(true);
+        }
 
-  const columns = useMemo(() => [
-    { key: 'id', label: 'Order NO', render: (val) => <span className="flex items-center gap-1.5"><Box className="w-4 h-4 text-slate-400"/> {val}</span> },
-    { key: 'customer', label: 'Customer', render: (val) => <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-slate-400"/> {val}</span> },
-    { key: 'total', label: 'Amount', render: (val) => <span className="font-semibold text-slate-800 dark:text-white flex items-center"><IndianRupee className="w-3.5 h-3.5 text-slate-500 mr-0.5"/>{val}</span> },
-    { key: 'status', label: 'Status', render: (val) => <Badge status={val} /> },
-  ], []);
+        const response = await apiRequest('/dashboard');
+        setDashboardData({
+          stats: response.data?.stats || {},
+          revenueData: (response.data?.revenueData || []).map((point) => ({
+            ...point,
+            revenue: Number(point.revenue || 0),
+          })),
+          statusData: (response.data?.statusData || []).map((point) => ({
+            ...point,
+            value: Number(point.value || 0),
+          })),
+          recentOrders: response.data?.recentOrders || [],
+          newCustomers: response.data?.newCustomers || [],
+        });
+      } catch (error) {
+        addToast(error.message || 'Unable to load dashboard data.', 'error');
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [addToast]
+  );
+
+  useEffect(() => {
+    loadDashboard({ showLoader: true });
+  }, [loadDashboard]);
+
+  const statsCards = useMemo(
+    () => [
+      {
+        title: 'Total Categories',
+        value: dashboardData.stats.totalCategories || 0,
+        icon: List,
+        iconColor: 'text-white',
+        valueColor: 'text-white',
+        labelColor: 'text-violet-50/90',
+        pillClass: 'bg-white/18 text-white',
+        iconBg: 'bg-white/16',
+        cardClass: 'border-0 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 shadow-[0_14px_34px_rgba(124,58,237,0.24)]',
+      },
+      {
+        title: 'Total Banners',
+        value: dashboardData.stats.totalBanners || 0,
+        icon: ImageIcon,
+        iconColor: 'text-white',
+        valueColor: 'text-white',
+        labelColor: 'text-pink-50/90',
+        pillClass: 'bg-white/18 text-white',
+        iconBg: 'bg-white/16',
+        cardClass: 'border-0 bg-gradient-to-br from-pink-500 via-fuchsia-500 to-rose-600 shadow-[0_14px_34px_rgba(236,72,153,0.24)]',
+      },
+      {
+        title: 'Global Discount',
+        value: `${Number(dashboardData.stats.globalDiscount || 0)}%`,
+        icon: Award,
+        iconColor: 'text-white',
+        valueColor: 'text-white',
+        labelColor: 'text-amber-50/90',
+        pillClass: 'bg-white/18 text-white',
+        iconBg: 'bg-white/16',
+        cardClass: 'border-0 bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 shadow-[0_14px_34px_rgba(245,158,11,0.24)]',
+      },
+      {
+        title: 'Total Products',
+        value: dashboardData.stats.totalProducts || 0,
+        icon: Package,
+        iconColor: 'text-white',
+        valueColor: 'text-white',
+        labelColor: 'text-cyan-50/90',
+        pillClass: 'bg-white/18 text-white',
+        iconBg: 'bg-white/16',
+        cardClass: 'border-0 bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-600 shadow-[0_14px_34px_rgba(6,182,212,0.22)]',
+      },
+      {
+        title: 'Total Orders',
+        value: dashboardData.stats.totalOrders || 0,
+        icon: ShoppingBag,
+        iconColor: 'text-white',
+        valueColor: 'text-white',
+        labelColor: 'text-emerald-50/90',
+        pillClass: 'bg-white/18 text-white',
+        iconBg: 'bg-white/16',
+        cardClass: 'border-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 shadow-[0_14px_34px_rgba(16,185,129,0.22)]',
+      },
+      {
+        title: 'Total Income',
+        value: formatCurrency(dashboardData.stats.totalIncome),
+        icon: IndianRupee,
+        iconColor: 'text-white',
+        valueColor: 'text-white',
+        labelColor: 'text-rose-50/90',
+        pillClass: 'bg-white/18 text-white',
+        iconBg: 'bg-white/16',
+        cardClass: 'border-0 bg-gradient-to-br from-rose-500 via-red-500 to-orange-600 shadow-[0_14px_34px_rgba(244,63,94,0.22)]',
+      },
+    ],
+    [dashboardData.stats]
+  );
+
+  const recentOrders = useMemo(
+    () =>
+      (dashboardData.recentOrders || []).map((order) => ({
+        ...order,
+        customerLabel: order.customer_name || 'Unknown customer',
+        createdLabel: formatDate(order.created_at, true),
+      })),
+    [dashboardData.recentOrders]
+  );
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 fade-in">
+        <PageHeader title="Dashboard" icon={LayoutDashboard} subtitle="Loading your live business summary." />
+        <div className="flex min-h-96 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0a0a0f]">
+          <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+            <LoaderCircle className="h-5 w-5 animate-spin" />
+            <span>Loading dashboard...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 fade-in">
-      <PageHeader 
-        title="Dashboard" 
-        icon={LayoutDashboard} 
-        subtitle="Welcome back! Here's what's happening today." 
-        action={<Button icon={Plus}>New Order</Button>} 
+      <PageHeader
+        title="Dashboard"
+        icon={LayoutDashboard}
+        subtitle="Track catalog, revenue, and recent activity from one live admin overview."
+        action={
+          <div className="flex flex-wrap gap-3">
+            <Button variant="secondary" onClick={() => loadDashboard()} disabled={isRefreshing}>
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+            <Button icon={Plus} onClick={() => navigate('/orders/billing/new')}>
+              New Order
+            </Button>
+          </div>
+        }
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {stats.map((s, i) => (
-          <div key={i} className="bg-white dark:bg-[#13131a] p-4 rounded-xl border border-slate-200 dark:border-white/5 shadow-sm flex flex-col gap-3 relative overflow-hidden group hover:border-slate-300 dark:hover:border-white/10 transition-colors">
-            <div className={`absolute -right-4 -top-4 w-16 h-16 rounded-full ${s.bg} blur-xl opacity-50 group-hover:opacity-100 transition-opacity`}></div>
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${s.bg}`}>
-              <s.icon className={`w-5 h-5 ${s.color}`} />
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        {statsCards.map((card) => (
+          <div
+            key={card.title}
+            className={`group relative overflow-hidden rounded-2xl p-4 transition-transform duration-300 hover:-translate-y-0.5 ${card.cardClass}`}
+          >
+            <div className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-white/14 blur-2xl"></div>
+            <div className="absolute bottom-0 left-6 h-14 w-14 rounded-full bg-black/10 blur-xl"></div>
+            <div className="relative flex items-start justify-between gap-3">
+              <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${card.pillClass}`}>
+                Overview
+              </span>
+              <div className={`flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 ${card.iconBg}`}>
+                <card.icon className={`h-5 w-5 ${card.iconColor}`} />
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-slate-800 dark:text-white">{s.value}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider mt-1">{s.title}</p>
+            <div className="relative mt-8">
+              <p className={`text-3xl font-black tracking-tight ${card.valueColor}`}>{card.value}</p>
+              <p className={`mt-1 text-xs font-medium uppercase tracking-[0.18em] ${card.labelColor}`}>{card.title}</p>
+            </div>
+            <div className="relative mt-5 h-1.5 overflow-hidden rounded-full bg-white/12">
+              <div className="h-full w-2/3 rounded-full bg-white/70"></div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2" title="Revenue Overview" icon={TrendingUp}>
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={REVENUE_DATA}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#ffffff10" : "#e2e8f0"} vertical={false} />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `₹${val/1000}k`} />
-                <RechartsTooltip contentStyle={tooltipStyle} />
-                <Line type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, fill: isDark ? '#13131a' : '#ffffff', stroke: '#f59e0b', strokeWidth: 2 }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            {dashboardData.revenueData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dashboardData.revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#ffffff10' : '#e2e8f0'} vertical={false} />
+                  <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis
+                    stroke="#64748b"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `₹${Math.round(Number(value || 0) / 1000)}k`}
+                  />
+                  <RechartsTooltip contentStyle={tooltipStyle} formatter={(value) => formatCurrency(value)} />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#f59e0b"
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: isDark ? '#13131a' : '#ffffff', stroke: '#f59e0b', strokeWidth: 2 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-white/10 dark:text-slate-400">
+                No revenue data available.
+              </div>
+            )}
           </div>
         </Card>
+
         <Card title="Order Status" icon={PieChartIcon}>
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={ORDER_STATUS_DATA} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                  {ORDER_STATUS_DATA.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={Object.values(COLORS)[index % Object.values(COLORS).length]} />
-                  ))}
-                </Pie>
-                <RechartsTooltip contentStyle={tooltipStyle} />
-                <Legend verticalAlign="bottom" height={36} iconType="circle" />
-              </PieChart>
-            </ResponsiveContainer>
+            {dashboardData.statusData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={dashboardData.statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={82} paddingAngle={5} dataKey="value">
+                    {dashboardData.statusData.map((entry, index) => (
+                      <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip contentStyle={tooltipStyle} />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-white/10 dark:text-slate-400">
+                No order status data available.
+              </div>
+            )}
           </div>
         </Card>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2" title="Recent Orders" icon={Clock}>
-          <DataTable columns={columns} data={MOCK_ORDERS.slice(0, 5)} searchPlaceholder="Search orders..." exportable={false} />
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card
+          className="lg:col-span-2"
+          title="Recent Orders"
+          icon={Clock}
+          action={
+            <Button variant="secondary" onClick={() => navigate('/orders/all')}>
+              View All Orders
+            </Button>
+          }
+        >
+          {recentOrders.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left text-sm">
+                <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-white/10 dark:text-slate-400">
+                  <tr>
+                    {['Order No', 'Customer', 'Type', 'Status', 'Payment', 'Amount', 'Created', 'Action'].map((label) => (
+                      <th key={label} className="px-3 py-3 font-semibold">
+                        {label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => (
+                    <tr key={order.id} className="border-b border-slate-100 dark:border-white/5">
+                      <td className="px-3 py-3 font-semibold text-amber-600 dark:text-amber-400">{order.order_no}</td>
+                      <td className="px-3 py-3">
+                        <div>
+                          <p className="font-medium text-slate-800 dark:text-white">{order.customerLabel}</p>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3">
+                        <Badge status={order.order_type || 'ONLINE'} />
+                      </td>
+                      <td className="px-3 py-3">
+                        <Badge status={order.status || 'Pending'} />
+                      </td>
+                      <td className="px-3 py-3">
+                        <Badge status={order.payment_status || 'Pending'} />
+                      </td>
+                      <td className="px-3 py-3 font-semibold text-slate-900 dark:text-white">{formatCurrency(order.total)}</td>
+                      <td className="px-3 py-3 text-slate-600 dark:text-slate-300">{order.createdLabel}</td>
+                      <td className="px-3 py-3">
+                        <button
+                          onClick={() => navigate(`/orders/all?search=${encodeURIComponent(order.order_no)}`)}
+                          className="rounded bg-sky-50 p-1.5 text-sky-600 transition-colors hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-400 dark:hover:bg-sky-500/20"
+                          title="Open order in All Orders"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-white/10 dark:text-slate-400">
+              No recent orders available.
+            </div>
+          )}
         </Card>
+
         <Card title="New Customers" icon={Users}>
           <div className="space-y-4">
-            {MOCK_CUSTOMERS.slice(0, 5).map(c => (
-              <div key={c.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-white/[0.02] rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-100 dark:hover:border-white/5">
-                <img src={c.avatar} alt={c.name} className="w-10 h-10 rounded-full border border-slate-200 dark:border-white/10" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-800 dark:text-white">{c.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{c.city}</p>
+            {dashboardData.newCustomers.length > 0 ? (
+              dashboardData.newCustomers.map((customer) => (
+                <div
+                  key={customer.id}
+                  className="flex items-center gap-3 rounded-lg border border-transparent p-2 transition-colors hover:border-slate-100 hover:bg-slate-50 dark:hover:border-white/5 dark:hover:bg-white/[0.02]"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-sm font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                    {getInitials(customer.name)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-800 dark:text-white">{customer.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {[customer.city || 'Unknown city', customer.phone || 'No phone'].join(' • ')}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{formatDate(customer.created_at)}</p>
+                  </div>
                 </div>
-                <Button variant="ghost" className="p-1.5"><MoreVertical className="w-4 h-4" /></Button>
+              ))
+            ) : (
+              <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-white/10 dark:text-slate-400">
+                No new customers available.
               </div>
-            ))}
-            <Button variant="secondary" className="w-full mt-2">View All Customers</Button>
+            )}
+            <Button variant="secondary" className="w-full" onClick={() => navigate('/website/customers')}>
+              View All Customers
+            </Button>
           </div>
         </Card>
       </div>

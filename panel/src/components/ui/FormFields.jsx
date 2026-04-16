@@ -15,7 +15,18 @@ export const Select = ({ label, options, className = '', ...props }) => (
       className="bg-white dark:bg-[#0a0a0f] border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 appearance-none shadow-sm"
       {...props}
     >
-      {options.map(opt => <option key={opt.value || opt} value={opt.value || opt}>{opt.label || opt}</option>)}
+      {options.map((opt, index) => {
+        const isObjectOption = typeof opt === 'object' && opt !== null;
+        const value = isObjectOption ? opt.value ?? '' : opt;
+        const label = isObjectOption ? opt.label ?? String(value) : opt;
+        const key = isObjectOption ? `${String(value)}-${index}` : `${String(opt)}-${index}`;
+
+        return (
+          <option key={key} value={value}>
+            {label}
+          </option>
+        );
+      })}
     </select>
   </div>
 );

@@ -1,48 +1,155 @@
-import { useState, useMemo } from 'react';
-import { Image as ImageIcon, Edit, Trash, Plus, UploadCloud } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Image as ImageIcon, Edit, Trash, Plus, LoaderCircle, Link as LinkIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { DataTable } from '../../components/ui/DataTable';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Modal } from '../../components/ui/Modal';
-import { Input } from '../../components/ui/FormFields';
+import { apiRequest, getAssetUrl } from '../../lib/api';
 
 const BannersPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
   const { addToast } = useToast();
-  
-  const banners = useMemo(() => Array.from({length: 4}).map((_, i) => ({
-    id: i+1, name: `Diwali Offer ${i+1}`, image: `https://picsum.photos/seed/ban${i}/800/200`, status: 'Active'
-  })), []);
+  const [banners, setBanners] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const cols = useMemo(() => [
+  const loadBanners = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiRequest('/banners');
+      setBanners(response.data || []);
+    } catch (error) {
+      addToast(error.message || 'Unable to load banners.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [addToast]);
+
+  useEffect(() => {
+    loadBanners();
+  }, [loadBanners]);
+
+  const handleDelete = async (banner) => {
+    const confirmed = window.confirm(`Delete banner "${banner.name}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await apiRequest(`/banners/${banner.id}`, { method: 'DELETE' });
+      addToast('Banner deleted successfully.');
+      await loadBanners();
+    } catch (error) {
+      addToast(error.message || 'Unable to delete banner.', 'error');
+    }
+  };
+
+  const tableRows = useMemo(
+    () =>
+      banners.map((banner) => ({
+        ...banner,
+        imageUrl: getAssetUrl(banner.image),
+        statusLabel: Number(banner.is_active) === 1 ? 'Active' : 'Inactive',
+      })),
+    [banners]
+  );
+
+  const columns = [
     { key: 'id', label: 'ID' },
-    { key: 'image', label: 'Image Preview', render: (val) => <img src={val} className="h-12 w-32 object-cover rounded border border-slate-200 dark:border-white/10 shadow-sm" alt="Banner" /> },
-    { key: 'name', label: 'Banner Name', render: (val) => <span className="font-medium text-slate-800 dark:text-white">{val}</span> },
-    { key: 'status', label: 'Status', render: (val) => <Badge status={val === 'Active' ? 'Paid' : 'Pending'} /> },
-    { key: 'actions', label: 'Actions', render: () => (
-      <div className="flex gap-2">
-        <button onClick={() => setIsModalOpen(true)} className="p-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors"><Edit className="w-4 h-4"/></button>
-        <button className="p-1.5 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors"><Trash className="w-4 h-4"/></button>
-      </div>
-    )}
-  ], []);
+    {
+      key: 'imageUrl',
+      label: 'Image',
+      render: (value, row) => (
+        <img
+          src={value}
+          className="h-14 w-28 rounded-lg border border-slate-200 object-cover shadow-sm dark:border-white/10"
+          alt={row.name}
+        />
+      ),
+    },
+    {
+      key: 'name',
+      label: 'Banner Name',
+      render: (value) => <span className="font-medium text-slate-800 dark:text-white">{value}</span>,
+    },
+    {
+      key: 'link',
+      label: 'Link',
+      render: (value) =>
+        value ? (
+          <a
+            href={value}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex max-w-[220px] items-center gap-2 truncate text-sm text-amber-600 hover:text-amber-500 dark:text-amber-400"
+          >
+            <LinkIcon className="h-4 w-4 shrink-0" />
+            <span className="truncate">{value}</span>
+          </a>
+        ) : (
+          <span className="text-slate-400 dark:text-slate-500">No link</span>
+        ),
+    },
+    { key: 'sort_order', label: 'Order' },
+    {
+      key: 'statusLabel',
+      label: 'Status',
+      render: (value) => <Badge status={value} />,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (_, row) => (
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate(`/website/banners/${row.id}/edit`)}
+            className="rounded bg-emerald-50 p-1.5 text-emerald-600 transition-colors hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
+            aria-label={`Edit ${row.name}`}
+          >
+            <Edit className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => handleDelete(row)}
+            className="rounded bg-rose-50 p-1.5 text-rose-600 transition-colors hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
+            aria-label={`Delete ${row.name}`}
+          >
+            <Trash className="h-4 w-4" />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6 fade-in">
-      <PageHeader title="Home Banners" icon={ImageIcon} />
-      <DataTable columns={cols} data={banners} actions={<Button icon={Plus} onClick={() => setIsModalOpen(true)}>Add Banner</Button>} />
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Edit Banner">
-        <div className="space-y-4">
-          <Input label="Banner Name" defaultValue="Diwali Offer" />
-          <div className="border-2 border-dashed border-slate-300 dark:border-white/20 rounded-lg p-8 text-center bg-slate-50 dark:bg-white/[0.01] hover:bg-slate-100 dark:hover:bg-white/[0.03] transition-colors cursor-pointer">
-            <UploadCloud className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Drag & drop image here or click to browse</p>
+      <PageHeader
+        title="Home Banners"
+        icon={ImageIcon}
+        subtitle="Add, update, and reorder home page banners with live database sync."
+        badge={`${banners.length} total`}
+        action={
+          <Button icon={Plus} onClick={() => navigate('/website/banners/new')} className="w-full sm:w-auto">
+            Add Banner
+          </Button>
+        }
+      />
+
+      {isLoading ? (
+        <div className="flex min-h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0a0a0f]">
+          <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+            <LoaderCircle className="h-5 w-5 animate-spin" />
+            <span>Loading banners...</span>
           </div>
-          <Button className="w-full" onClick={() => { setIsModalOpen(false); addToast('Banner saved'); }}>Save Changes</Button>
         </div>
-      </Modal>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={tableRows}
+          searchPlaceholder="Search banners..."
+          exportable={false}
+        />
+      )}
     </div>
   );
 };

@@ -66,7 +66,22 @@ router.get('/:id', async (req, res) => {
 // POST /api/customers
 router.post('/', auth, async (req, res) => {
   try {
-    const { name, email, phone, address, city, state, pincode } = req.body;
+    const name = req.body.name?.trim();
+    const email = req.body.email?.trim() || null;
+    const phone = req.body.phone?.trim();
+    const address = req.body.address?.trim() || null;
+    const city = req.body.city?.trim() || null;
+    const state = req.body.state?.trim() || null;
+    const pincode = req.body.pincode?.trim() || null;
+
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Customer name is required.' });
+    }
+
+    if (!phone) {
+      return res.status(400).json({ success: false, message: 'Phone number is required.' });
+    }
+
     const [result] = await pool.query(
       'INSERT INTO customers (name, email, phone, address, city, state, pincode) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [name, email, phone, address, city, state, pincode]
@@ -80,12 +95,37 @@ router.post('/', auth, async (req, res) => {
 // PUT /api/customers/:id
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { name, email, phone, address, city, state, pincode } = req.body;
+    const name = req.body.name?.trim();
+    const email = req.body.email?.trim() || null;
+    const phone = req.body.phone?.trim();
+    const address = req.body.address?.trim() || null;
+    const city = req.body.city?.trim() || null;
+    const state = req.body.state?.trim() || null;
+    const pincode = req.body.pincode?.trim() || null;
+
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Customer name is required.' });
+    }
+
+    if (!phone) {
+      return res.status(400).json({ success: false, message: 'Phone number is required.' });
+    }
+
     await pool.query(
       'UPDATE customers SET name=?, email=?, phone=?, address=?, city=?, state=?, pincode=? WHERE id=?',
       [name, email, phone, address, city, state, pincode, req.params.id]
     );
     res.json({ success: true, message: 'Customer updated' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE /api/customers/:id
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM customers WHERE id = ?', [req.params.id]);
+    res.json({ success: true, message: 'Customer deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../config/db');
 const auth = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -66,12 +67,29 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/products
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, upload.handleErrors('image'), async (req, res) => {
   try {
-    const { category_id, name, image, price, sale_price, content_unit, stock_status, description, sort_order } = req.body;
+    const category_id = Number(req.body.category_id);
+    const name = req.body.name?.trim();
+    const image = req.file ? `/uploads/${req.file.filename}` : req.body.image?.trim() || null;
+    const price = Number(req.body.price) || 0;
+    const sale_price = Number(req.body.sale_price) || 0;
+    const content_unit = req.body.content_unit?.trim() || '1 Box';
+    const stock_status = req.body.stock_status || 'In Stock';
+    const description = req.body.description?.trim() || null;
+    const sort_order = Number(req.body.sort_order) || 0;
+
+    if (!category_id) {
+      return res.status(400).json({ success: false, message: 'Category is required.' });
+    }
+
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Product name is required.' });
+    }
+
     const [result] = await pool.query(
       'INSERT INTO products (category_id, name, image, price, sale_price, content_unit, stock_status, description, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [category_id, name, image, price, sale_price, content_unit || '1 Box', stock_status || 'In Stock', description, sort_order || 0]
+      [category_id, name, image, price, sale_price, content_unit, stock_status, description, sort_order]
     );
     res.status(201).json({ success: true, message: 'Product created', id: result.insertId });
   } catch (error) {
@@ -80,9 +98,27 @@ router.post('/', auth, async (req, res) => {
 });
 
 // PUT /api/products/:id
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, upload.handleErrors('image'), async (req, res) => {
   try {
-    const { category_id, name, image, price, sale_price, content_unit, stock_status, description, sort_order, is_active } = req.body;
+    const category_id = Number(req.body.category_id);
+    const name = req.body.name?.trim();
+    const image = req.file ? `/uploads/${req.file.filename}` : req.body.image?.trim() || null;
+    const price = Number(req.body.price) || 0;
+    const sale_price = Number(req.body.sale_price) || 0;
+    const content_unit = req.body.content_unit?.trim() || '1 Box';
+    const stock_status = req.body.stock_status || 'In Stock';
+    const description = req.body.description?.trim() || null;
+    const sort_order = Number(req.body.sort_order) || 0;
+    const is_active = Number(req.body.is_active ?? 1);
+
+    if (!category_id) {
+      return res.status(400).json({ success: false, message: 'Category is required.' });
+    }
+
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Product name is required.' });
+    }
+
     await pool.query(
       'UPDATE products SET category_id=?, name=?, image=?, price=?, sale_price=?, content_unit=?, stock_status=?, description=?, sort_order=?, is_active=? WHERE id=?',
       [category_id, name, image, price, sale_price, content_unit, stock_status, description, sort_order, is_active, req.params.id]
