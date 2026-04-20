@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Search, Copy, Download, FileText, ChevronLeft, ChevronRight, Columns3 } from 'lucide-react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Search, Copy, Download, FileText, ChevronLeft, ChevronRight, Columns3, Minus, Plus } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from '../../context/ToastContext';
 
@@ -12,12 +12,17 @@ export const DataTable = ({
   exportVariant = 'icons',
   showColumnVisibility = false,
   exportFileName = 'export',
+  showSearch = true,
+  getRowClassName,
+  rowKey,
+  renderExpandedRow,
 }) => {
   const { addToast } = useToast();
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [visibleColumnKeys, setVisibleColumnKeys] = useState(columns.map((column) => column.key));
   const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false);
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -40,6 +45,35 @@ export const DataTable = ({
   
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const getResolvedRowKey = (row, index) => {
+    if (typeof rowKey === 'function') {
+      return rowKey(row, index);
+    }
+
+    if (typeof rowKey === 'string' && row?.[rowKey] != null) {
+      return row[rowKey];
+    }
+
+    if (row?.id != null) {
+      return row.id;
+    }
+
+    return index;
+  };
+
+  useEffect(() => {
+    if (typeof renderExpandedRow !== 'function') {
+      setExpandedRowKeys([]);
+      return;
+    }
+
+    const availableKeys = new Set(
+      data.map((row, index) => String(getResolvedRowKey(row, index)))
+    );
+
+    setExpandedRowKeys((current) => current.filter((key) => availableKeys.has(String(key))));
+  }, [data, renderExpandedRow, rowKey]);
 
   const getExportRows = () =>
     filteredData.map((row) =>
@@ -75,7 +109,7 @@ export const DataTable = ({
       }
 
       addToast('Data copied successfully!');
-    } catch (error) {
+    } catch {
       addToast('Unable to copy data.', 'error');
     }
   };
@@ -99,7 +133,7 @@ export const DataTable = ({
       URL.revokeObjectURL(url);
 
       addToast('Excel export downloaded successfully!');
-    } catch (error) {
+    } catch {
       addToast('Unable to export Excel file.', 'error');
     }
   };
@@ -143,7 +177,7 @@ export const DataTable = ({
       printWindow.print();
 
       addToast('PDF export opened in print dialog.');
-    } catch (error) {
+    } catch {
       addToast('Unable to export PDF.', 'error');
     }
   };
@@ -170,19 +204,34 @@ export const DataTable = ({
     );
   };
 
+  const toggleExpandedRow = (resolvedRowKey) => {
+    const normalizedKey = String(resolvedRowKey);
+    setExpandedRowKeys((current) =>
+      current.includes(normalizedKey)
+        ? current.filter((key) => key !== normalizedKey)
+        : [...current, normalizedKey]
+    );
+  };
+
+  const renderCellValue = (column, row) => (column.render ? column.render(row[column.key], row) : row[column.key]);
+
   return (
     <div className="flex flex-col w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder={searchPlaceholder}
-              className="w-full bg-white dark:bg-[#0a0a0f] border border-slate-300 dark:border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-sm"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-            />
+            {showSearch ? (
+              <>
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input 
+                  type="text" 
+                  placeholder={searchPlaceholder}
+                  className="w-full bg-white dark:bg-[#0a0a0f] border border-slate-300 dark:border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-sm"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                />
+              </>
+            ) : null}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -245,15 +294,45 @@ export const DataTable = ({
             </tr>
           </thead>
           <tbody>
-            {paginatedData.length > 0 ? paginatedData.map((row, i) => (
-              <tr key={i} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
-                {visibleColumns.map((col, j) => (
-                  <td key={j} className="px-4 py-3 align-middle text-slate-700 dark:text-slate-300">
-                    {col.render ? col.render(row[col.key], row) : row[col.key]}
-                  </td>
-                ))}
-              </tr>
-            )) : (
+            {paginatedData.length > 0 ? paginatedData.map((row, i) => {
+              const resolvedRowKey = getResolvedRowKey(row, (currentPage - 1) * itemsPerPage + i);
+              const isExpanded = expandedRowKeys.includes(String(resolvedRowKey));
+
+              return (
+                <Fragment key={resolvedRowKey}>
+                  <tr
+                    className={`border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors ${getRowClassName ? getRowClassName(row) : ''}`}
+                  >
+                    {visibleColumns.map((col, j) => (
+                      <td key={`${resolvedRowKey}-${col.key}`} className="px-4 py-3 align-middle text-slate-700 dark:text-slate-300">
+                        {typeof renderExpandedRow === 'function' && j === 0 ? (
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => toggleExpandedRow(resolvedRowKey)}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600 transition-colors hover:bg-sky-100 dark:border-sky-400/30 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20"
+                              aria-label={isExpanded ? 'Collapse row details' : 'Expand row details'}
+                            >
+                              {isExpanded ? <Minus className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                            </button>
+                            <div className="min-w-0 flex-1">{renderCellValue(col, row)}</div>
+                          </div>
+                        ) : (
+                          renderCellValue(col, row)
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                  {typeof renderExpandedRow === 'function' && isExpanded ? (
+                    <tr key={`${resolvedRowKey}-expanded`} className="border-b border-slate-100 dark:border-white/5 bg-slate-50/70 dark:bg-white/[0.02]">
+                      <td colSpan={visibleColumns.length || 1} className="px-4 py-4">
+                        {renderExpandedRow(row)}
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
+              );
+            }) : (
               <tr><td colSpan={visibleColumns.length || 1} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">No records found.</td></tr>
             )}
           </tbody>

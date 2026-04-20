@@ -1,0 +1,12 @@
+meta {
+  name: DELETE Brand
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/settings/brands/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}

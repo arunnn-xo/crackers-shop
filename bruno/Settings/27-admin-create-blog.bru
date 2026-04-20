@@ -1,0 +1,21 @@
+meta {
+  name: POST Create Blog
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/settings/blogs
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+body:multipart-form {
+  meta_title: Festival Buying Guide
+  meta_description: Simple guide for safe and exciting cracker purchases.
+  meta_keywords: crackers, festival, buying guide
+  blog_name: Festival Buying Guide
+  feet_content: <p>Sample blog content from Bruno.</p>
+  image: "C:\\replace-with-image\\blog-cover.png"
+}

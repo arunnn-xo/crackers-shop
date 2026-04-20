@@ -1,0 +1,31 @@
+meta {
+  name: PUT Update Billing Order
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/orders/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "customer_id": 1,
+    "shipping": 50,
+    "discount": 0,
+    "payment_status": "Paid",
+    "status": "Complete",
+    "notes": "Updated from Bruno collection",
+    "items": [
+      {
+        "product_id": 1,
+        "quantity": 3,
+        "price": 500
+      }
+    ]
+  }
+}

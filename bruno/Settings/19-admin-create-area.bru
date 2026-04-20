@@ -1,0 +1,21 @@
+meta {
+  name: POST Create Area
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/settings/areas
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "city_id": 1,
+    "name": "T Nagar",
+    "pincode": "600017"
+  }
+}

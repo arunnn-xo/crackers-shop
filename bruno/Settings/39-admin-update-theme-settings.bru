@@ -1,0 +1,22 @@
+meta {
+  name: PUT Admin Theme Settings
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/theme
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "color_primary": "#f8fafc",
+    "color_secondary": "#ffffff",
+    "color_tertiary": "#f59e0b",
+    "color_quaternary": "#ec4899"
+  }
+}

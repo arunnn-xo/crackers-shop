@@ -1,0 +1,12 @@
+meta {
+  name: DELETE Banner
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/banners/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}

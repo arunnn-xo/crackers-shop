@@ -1,0 +1,12 @@
+meta {
+  name: DELETE Order Status
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/settings/order-statuses/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}

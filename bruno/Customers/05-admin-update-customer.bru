@@ -1,0 +1,25 @@
+meta {
+  name: PUT Update Customer
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/customers/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "name": "Bruno Customer Updated",
+    "email": "customer-updated@example.com",
+    "phone": "9876543210",
+    "address": "No.2 Market Street",
+    "city": "Madurai",
+    "state": "Tamil Nadu",
+    "pincode": "625001"
+  }
+}

@@ -1,0 +1,23 @@
+meta {
+  name: PUT Update Category
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/categories/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "data_id": "CAT-001",
+    "name": "Festival Specials Updated",
+    "image": "/uploads/categories/sample-updated.png",
+    "sort_order": 2,
+    "is_active": 1
+  }
+}

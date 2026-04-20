@@ -1,0 +1,19 @@
+meta {
+  name: POST Login
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+}
+
+headers {
+  content-type: application/json
+}
+
+body {
+  {
+    "email": "admin@sparkle.com",
+    "password": "admin123"
+  }
+}

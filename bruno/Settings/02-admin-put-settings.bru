@@ -1,0 +1,21 @@
+meta {
+  name: PUT Bulk Update Settings
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "site_name": "Crackers Admin",
+    "hero_title": "Festival Fireworks",
+    "hero_cta_link": "/products"
+  }
+}

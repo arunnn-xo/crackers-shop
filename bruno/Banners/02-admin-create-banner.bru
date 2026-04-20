@@ -1,0 +1,20 @@
+meta {
+  name: POST Create Banner
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/banners
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+body:multipart-form {
+  name: Summer Sale Banner
+  link: /products
+  sort_order: 1
+  is_active: 1
+  image: "C:\\replace-with-image\\banner.png"
+}

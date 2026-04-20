@@ -1,0 +1,21 @@
+meta {
+  name: POST Create Order Status
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/settings/order-statuses
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "name": "Packed",
+    "color": "#0f766e",
+    "sort_order": 7
+  }
+}

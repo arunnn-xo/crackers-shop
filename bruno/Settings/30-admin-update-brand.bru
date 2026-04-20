@@ -1,0 +1,19 @@
+meta {
+  name: PUT Update Brand
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/brands/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+body:multipart-form {
+  name: Sparkle Brand Updated
+  sort_order: 2
+  is_active: 1
+  logo: "C:\\replace-with-image\\brand-logo-updated.png"
+}

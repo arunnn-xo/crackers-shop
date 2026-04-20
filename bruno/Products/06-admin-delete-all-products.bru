@@ -1,0 +1,12 @@
+meta {
+  name: DELETE All Products
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/products
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}

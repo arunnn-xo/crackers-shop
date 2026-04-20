@@ -1,0 +1,21 @@
+meta {
+  name: PUT Update Order Status Setting
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/order-statuses/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "name": "Pending",
+    "color": "#f59e0b",
+    "sort_order": 1
+  }
+}

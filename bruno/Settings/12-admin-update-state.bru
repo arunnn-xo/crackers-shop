@@ -1,0 +1,19 @@
+meta {
+  name: PUT Update State
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/states/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "name": "Tamil Nadu Updated"
+  }
+}

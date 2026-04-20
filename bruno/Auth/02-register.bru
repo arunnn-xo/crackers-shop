@@ -1,0 +1,20 @@
+meta {
+  name: POST Register Admin
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+}
+
+headers {
+  content-type: application/json
+}
+
+body {
+  {
+    "name": "Bruno Admin",
+    "email": "bruno-admin@example.com",
+    "password": "admin123"
+  }
+}

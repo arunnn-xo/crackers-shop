@@ -198,10 +198,19 @@ CREATE TABLE IF NOT EXISTS seo_headings (
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS seo_details (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  seo_heading_id INT DEFAULT NULL,
   page_name VARCHAR(100) NOT NULL,
   meta_title VARCHAR(255) DEFAULT NULL,
   meta_description TEXT DEFAULT NULL,
   meta_keywords VARCHAR(500) DEFAULT NULL,
+  name VARCHAR(255) DEFAULT NULL,
+  description TEXT DEFAULT NULL,
+  image VARCHAR(255) DEFAULT NULL,
+  alt_key VARCHAR(255) DEFAULT NULL,
+  url VARCHAR(255) DEFAULT NULL,
+  canonical VARCHAR(255) DEFAULT NULL,
+  feet_content LONGTEXT DEFAULT NULL,
+  INDEX idx_seo_details_heading_id (seo_heading_id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -215,6 +224,7 @@ CREATE TABLE IF NOT EXISTS blogs (
   slug VARCHAR(255) NOT NULL UNIQUE,
   meta_title VARCHAR(255) DEFAULT NULL,
   meta_description TEXT DEFAULT NULL,
+  meta_keywords TEXT DEFAULT NULL,
   content LONGTEXT DEFAULT NULL,
   image VARCHAR(255) DEFAULT NULL,
   is_published TINYINT(1) DEFAULT 0,
@@ -297,11 +307,19 @@ INSERT IGNORE INTO store_config (is_store_open, min_order_value, global_discount
 INSERT IGNORE INTO settings (setting_key, setting_value, setting_group) VALUES
 ('company_name', 'Sparkle Fireworks', 'brand'),
 ('seo_title', 'Sparkle Fireworks | Best Crackers Online', 'brand'),
+('main_logo', '', 'brand'),
+('favicon', '', 'brand'),
 ('primary_phone', '+91 98765 43210', 'contact'),
+('whatsapp_number', '', 'contact'),
+('footer_content', '', 'contact'),
 ('email', 'support@sparklefireworks.com', 'contact'),
 ('address', '123 Sparkle Street, Sivakasi, Tamil Nadu, India', 'contact'),
 ('facebook_url', '', 'social'),
 ('instagram_url', '', 'social'),
+('twitter_url', '', 'social'),
+('linkedin_url', '', 'social'),
+('youtube_url', '', 'social'),
+('offer_text_html', '', 'seo'),
 ('google_analytics_id', '', 'seo'),
 ('color_primary', '#f8fafc', 'theme'),
 ('color_secondary', '#ffffff', 'theme'),
@@ -327,5 +345,31 @@ INSERT IGNORE INTO seo_headings (page_name) VALUES
 ('Home Page'), ('Products Page'), ('About Page'), ('Contact Page');
 
 -- Default SEO Details
-INSERT IGNORE INTO seo_details (page_name, meta_title, meta_description, meta_keywords) VALUES
-('Home', 'Buy Best Crackers Online', 'Premium quality fireworks from Sivakasi at best prices.', 'crackers, fireworks, diwali');
+INSERT IGNORE INTO seo_details (
+  seo_heading_id,
+  page_name,
+  meta_title,
+  meta_description,
+  meta_keywords,
+  name,
+  description,
+  alt_key,
+  url,
+  canonical,
+  feet_content
+)
+SELECT
+  id,
+  page_name,
+  'Buy Best Crackers Online',
+  'Premium quality fireworks from Sivakasi at best prices.',
+  'crackers, fireworks, diwali',
+  'Home SEO',
+  'Premium quality fireworks from Sivakasi at best prices.',
+  'Premium crackers home banner',
+  '/',
+  '/',
+  '<p>Premium quality fireworks from Sivakasi at best prices.</p>'
+FROM seo_headings
+WHERE page_name = 'Home Page'
+LIMIT 1;

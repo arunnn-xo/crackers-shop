@@ -1,0 +1,19 @@
+meta {
+  name: GET Enquiries
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/settings/enquiries
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+params:query {
+  search: order
+  is_read: 0
+  start_date: 2026-04-01
+  end_date: 2026-04-30
+}

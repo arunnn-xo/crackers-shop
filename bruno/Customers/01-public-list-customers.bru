@@ -1,0 +1,19 @@
+meta {
+  name: GET Public List Customers
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/Getcustomers
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}
+
+params:query {
+  search: arun
+  city: Chennai
+  page: 1
+  limit: 20
+}

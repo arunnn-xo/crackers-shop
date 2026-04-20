@@ -1,0 +1,19 @@
+meta {
+  name: POST Create Brand
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/settings/brands
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+body:multipart-form {
+  name: Sparkle Brand
+  sort_order: 1
+  is_active: 1
+  logo: "C:\\replace-with-image\\brand-logo.png"
+}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Package, Edit, Trash, LoaderCircle, UploadCloud, Percent } from 'lucide-react';
+import { Plus, Package, Edit, Trash, LoaderCircle, UploadCloud, Percent, Download } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { DataTable } from '../../components/ui/DataTable';
@@ -11,6 +11,20 @@ import { Input } from '../../components/ui/FormFields';
 import { apiRequest, getAssetUrl } from '../../lib/api';
 
 const PREVIOUS_DISCOUNT_STORAGE_KEY = 'products_previous_discount';
+
+const downloadCsvFile = (rows, fileName) => {
+  const escapeCsvValue = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+  const csvContent = rows.map((row) => row.map(escapeCsvValue).join(',')).join('\n');
+  const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
 
 const parseBulkUploadFile = async (file, categories) => {
   const text = await file.text();
@@ -192,6 +206,39 @@ const ProductsPage = () => {
     }
   };
 
+  const handleDownloadBulkData = () => {
+    const headers = [
+      'category_name',
+      'name',
+      'image',
+      'price',
+      'sale_price',
+      'content_unit',
+      'stock_status',
+      'description',
+      'sort_order',
+      'is_active',
+    ];
+
+    const rows = products.length
+      ? products.map((product) => [
+          product.category_name || '',
+          product.name || '',
+          product.image || '',
+          product.price || 0,
+          product.sale_price || 0,
+          product.content_unit || '1 Box',
+          product.stock_status || 'In Stock',
+          product.description || '',
+          product.sort_order || 0,
+          product.is_active ?? 1,
+        ])
+      : [['', '', '', 0, 0, '1 Box', 'In Stock', '', 0, 1]];
+
+    downloadCsvFile([headers, ...rows], 'products_bulk_upload_data.csv');
+    addToast(products.length ? 'Product data downloaded successfully.' : 'Sample bulk upload file downloaded successfully.');
+  };
+
   const tableRows = useMemo(
     () =>
       products.map((product, index) => ({
@@ -349,6 +396,9 @@ const ProductsPage = () => {
 
       <Modal isOpen={isBulkUploadModalOpen} onClose={() => setIsBulkUploadModalOpen(false)} title="Bulk Upload Products">
         <div className="space-y-4">
+          <Button variant="secondary" className="w-full" icon={Download} onClick={handleDownloadBulkData}>
+            Download Data
+          </Button>
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium text-slate-600 dark:text-slate-400">Upload CSV or JSON</span>
             <input

@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Crackers Admin API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -1,0 +1,19 @@
+meta {
+  name: PUT Update Payment Status
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/orders/1/payment-status
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "payment_status": "Paid"
+  }
+}

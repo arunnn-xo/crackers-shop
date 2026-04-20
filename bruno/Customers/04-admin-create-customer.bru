@@ -1,0 +1,25 @@
+meta {
+  name: POST Create Customer
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/customers
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "name": "Bruno Customer",
+    "email": "customer@example.com",
+    "phone": "9876543210",
+    "address": "No.1 Market Street",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "pincode": "600001"
+  }
+}

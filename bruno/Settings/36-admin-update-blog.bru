@@ -1,0 +1,21 @@
+meta {
+  name: PUT Update Blog
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/blogs/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+body:multipart-form {
+  meta_title: Festival Buying Guide Updated
+  meta_description: Updated guide for safe and exciting cracker purchases.
+  meta_keywords: crackers, festival, updated guide
+  blog_name: Festival Buying Guide Updated
+  feet_content: <p>Updated sample blog content from Bruno.</p>
+  image: "C:\\replace-with-image\\blog-cover-updated.png"
+}

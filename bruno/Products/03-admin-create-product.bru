@@ -1,0 +1,24 @@
+meta {
+  name: POST Create Product
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/products
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+body:multipart-form {
+  category_id: 1
+  name: Flower Pot Deluxe
+  price: 1200
+  sale_price: 999
+  content_unit: 1 Box
+  stock_status: In Stock
+  description: Sample product created from Bruno
+  sort_order: 1
+  image: "C:\\replace-with-image\\product.png"
+}

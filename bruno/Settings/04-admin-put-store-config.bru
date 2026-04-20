@@ -1,0 +1,19 @@
+meta {
+  name: PUT Store Config
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/store
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+body:multipart-form {
+  is_store_open: 1
+  min_order_value: 2000
+  global_discount: 15
+  off_banner_image: "C:\\replace-with-image\\off-banner.png"
+}

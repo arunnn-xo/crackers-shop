@@ -1,0 +1,21 @@
+meta {
+  name: PUT Update City
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/cities/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "state_id": 1,
+    "name": "Madurai",
+    "code": "IXM"
+  }
+}

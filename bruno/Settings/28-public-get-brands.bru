@@ -1,0 +1,16 @@
+meta {
+  name: GET Public Brands
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/Getsettings/brands
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}
+
+params:query {
+  search: sparkle
+}

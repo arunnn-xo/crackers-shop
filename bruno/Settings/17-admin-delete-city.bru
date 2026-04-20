@@ -1,0 +1,12 @@
+meta {
+  name: DELETE City
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/settings/cities/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}

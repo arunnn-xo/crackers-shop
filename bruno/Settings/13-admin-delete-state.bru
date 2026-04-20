@@ -1,0 +1,12 @@
+meta {
+  name: DELETE State
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/settings/states/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}

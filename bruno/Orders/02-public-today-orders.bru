@@ -1,0 +1,19 @@
+meta {
+  name: GET Public Today Orders
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/Getorders/today
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}
+
+params:query {
+  status: Pending
+  type: ONLINE
+  payment_status: Pending
+  search: ORD-
+}

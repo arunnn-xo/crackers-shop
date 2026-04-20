@@ -1,0 +1,23 @@
+meta {
+  name: PUT Reorder Order Statuses
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/order-statuses/reorder
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "statuses": [
+      { "id": 1 },
+      { "id": 2 },
+      { "id": 3 }
+    ]
+  }
+}

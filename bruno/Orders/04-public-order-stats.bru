@@ -1,0 +1,21 @@
+meta {
+  name: GET Public Order Stats
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/Getorders/stats
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}
+
+params:query {
+  type: BILLING
+  status: Complete
+  payment_status: Paid
+  start_date: 2026-04-01
+  end_date: 2026-04-30
+  search: ORD-
+}

@@ -158,16 +158,31 @@ const OnOffStatusPage = () => {
               <button
                 type="button"
                 onClick={handleToggle}
-                aria-pressed={isStoreOpen}
-                className={`relative h-8 w-14 rounded-full p-1 transition-colors shadow-inner ${
-                  isStoreOpen ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'
+                className={`relative flex h-9 w-20 flex-shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
+                  isStoreOpen 
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-[0_4px_14px_rgba(245,158,11,0.25)]' 
+                    : 'bg-rose-500 shadow-inner'
                 }`}
+                aria-pressed={isStoreOpen}
+                aria-label="Toggle store online status"
               >
-                <div
-                  className={`h-6 w-6 rounded-full bg-white shadow-md transition-transform ${
-                    isStoreOpen ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
+                <span className="sr-only">Toggle store status</span>
+                
+                <span className={`absolute inset-y-0 left-0 flex w-[48px] items-center justify-center text-xs font-bold tracking-wider text-white transition-opacity duration-300 ${
+                  isStoreOpen ? 'opacity-100' : 'opacity-0'
+                }`}>
+                  ON
+                </span>
+                
+                <span className={`absolute inset-y-0 right-0 flex w-[48px] items-center justify-center text-xs font-bold tracking-wider text-white transition-opacity duration-300 ${
+                  isStoreOpen ? 'opacity-0' : 'opacity-100'
+                }`}>
+                  OFF
+                </span>
+                
+                <span className={`absolute top-1 left-1 flex h-7 w-7 transform items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300 ease-in-out ${
+                  isStoreOpen ? 'translate-x-11' : 'translate-x-0'
+                }`} />
               </button>
             </div>
 

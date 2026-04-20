@@ -68,4 +68,30 @@ upload.handleErrors = (fieldName) => {
   };
 };
 
+upload.handleFieldsErrors = (fields) => {
+  return (req, res, next) => {
+    const multerUpload = upload.fields(fields);
+    multerUpload(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        const messages = {
+          LIMIT_FILE_SIZE: 'File is too large. Maximum size is 10MB.',
+          LIMIT_UNEXPECTED_FILE: 'Unexpected file field.',
+          LIMIT_FILE_COUNT: 'Too many files uploaded.',
+        };
+        return res.status(400).json({
+          success: false,
+          message: messages[err.code] || err.message,
+        });
+      }
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message || 'File upload failed.',
+        });
+      }
+      next();
+    });
+  };
+};
+
 module.exports = upload;

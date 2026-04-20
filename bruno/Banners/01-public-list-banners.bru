@@ -1,0 +1,15 @@
+meta {
+  name: GET Public List Banners
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/Getbanners
+  body: none
+  auth: none
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}

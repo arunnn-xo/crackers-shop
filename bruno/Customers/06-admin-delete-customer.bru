@@ -1,0 +1,12 @@
+meta {
+  name: DELETE Customer
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/customers/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}

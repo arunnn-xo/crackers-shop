@@ -1,0 +1,4 @@
+category_name,name,image,price,sale_price,content_unit,stock_status,description,sort_order,is_active
+1000wala,Test Product 1,,500,450,1 Box,In Stock,Test description 1,1,1
+1000wala,Test Product 2,,800,700,2 Boxes,In Stock,Test description 2,2,1
+1000wala,Test Product 3,,1200,1000,5 Boxes,Out of Stock,Test description 3,3,1

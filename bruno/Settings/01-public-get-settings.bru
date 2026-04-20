@@ -1,0 +1,16 @@
+meta {
+  name: GET Public Settings
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/Getsettings
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}
+
+params:query {
+  group: homepage
+}

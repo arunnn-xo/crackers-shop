@@ -15,6 +15,8 @@ import {
   Image as ImageIcon,
   Eye,
   Award,
+  CalendarDays,
+  CheckCheck,
 } from 'lucide-react';
 import {
   CartesianGrid,
@@ -142,70 +144,48 @@ const DashboardPage = () => {
   const statsCards = useMemo(
     () => [
       {
-        title: 'Total Categories',
-        value: dashboardData.stats.totalCategories || 0,
-        icon: List,
+        title: 'Total Billed Amount',
+        value: formatCurrency(dashboardData.stats.totalRevenue),
+        icon: IndianRupee,
         iconColor: 'text-white',
         valueColor: 'text-white',
-        labelColor: 'text-violet-50/90',
+        labelColor: 'text-orange-50/90',
         pillClass: 'bg-white/18 text-white',
         iconBg: 'bg-white/16',
-        cardClass: 'border-0 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 shadow-[0_14px_34px_rgba(124,58,237,0.24)]',
+        cardClass: 'border-0 bg-gradient-to-r from-[#ff8100] to-[#ff5200] shadow-[0_14px_34px_rgba(255,129,0,0.24)]',
       },
       {
-        title: 'Total Banners',
-        value: dashboardData.stats.totalBanners || 0,
-        icon: ImageIcon,
-        iconColor: 'text-white',
-        valueColor: 'text-white',
-        labelColor: 'text-pink-50/90',
-        pillClass: 'bg-white/18 text-white',
-        iconBg: 'bg-white/16',
-        cardClass: 'border-0 bg-gradient-to-br from-pink-500 via-fuchsia-500 to-rose-600 shadow-[0_14px_34px_rgba(236,72,153,0.24)]',
-      },
-      {
-        title: 'Global Discount',
-        value: `${Number(dashboardData.stats.globalDiscount || 0)}%`,
-        icon: Award,
-        iconColor: 'text-white',
-        valueColor: 'text-white',
-        labelColor: 'text-amber-50/90',
-        pillClass: 'bg-white/18 text-white',
-        iconBg: 'bg-white/16',
-        cardClass: 'border-0 bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 shadow-[0_14px_34px_rgba(245,158,11,0.24)]',
-      },
-      {
-        title: 'Total Products',
-        value: dashboardData.stats.totalProducts || 0,
-        icon: Package,
-        iconColor: 'text-white',
-        valueColor: 'text-white',
-        labelColor: 'text-cyan-50/90',
-        pillClass: 'bg-white/18 text-white',
-        iconBg: 'bg-white/16',
-        cardClass: 'border-0 bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-600 shadow-[0_14px_34px_rgba(6,182,212,0.22)]',
-      },
-      {
-        title: 'Total Orders',
-        value: dashboardData.stats.totalOrders || 0,
-        icon: ShoppingBag,
+        title: "Today's Billing",
+        value: formatCurrency(dashboardData.stats.todaysBilling),
+        icon: CalendarDays,
         iconColor: 'text-white',
         valueColor: 'text-white',
         labelColor: 'text-emerald-50/90',
         pillClass: 'bg-white/18 text-white',
         iconBg: 'bg-white/16',
-        cardClass: 'border-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 shadow-[0_14px_34px_rgba(16,185,129,0.22)]',
+        cardClass: 'border-0 bg-gradient-to-r from-[#21c89f] to-[#04a090] shadow-[0_14px_34px_rgba(33,200,159,0.24)]',
       },
       {
-        title: 'Total Income',
-        value: formatCurrency(dashboardData.stats.totalIncome),
-        icon: IndianRupee,
+        title: 'Pending Payment Invoices',
+        value: dashboardData.stats.pendingOrders || 0,
+        icon: Clock,
         iconColor: 'text-white',
         valueColor: 'text-white',
-        labelColor: 'text-rose-50/90',
+        labelColor: 'text-pink-50/90',
         pillClass: 'bg-white/18 text-white',
         iconBg: 'bg-white/16',
-        cardClass: 'border-0 bg-gradient-to-br from-rose-500 via-red-500 to-orange-600 shadow-[0_14px_34px_rgba(244,63,94,0.22)]',
+        cardClass: 'border-0 bg-gradient-to-r from-[#fc3d7a] to-[#c604ec] shadow-[0_14px_34px_rgba(252,61,122,0.24)]',
+      },
+      {
+        title: 'Completed Invoices',
+        value: dashboardData.stats.completedOrders || 0,
+        icon: CheckCheck,
+        iconColor: 'text-white',
+        valueColor: 'text-white',
+        labelColor: 'text-sky-50/90',
+        pillClass: 'bg-white/18 text-white',
+        iconBg: 'bg-white/16',
+        cardClass: 'border-0 bg-gradient-to-r from-[#20c8f5] to-[#0563eb] shadow-[0_14px_34px_rgba(32,200,245,0.24)]',
       },
     ],
     [dashboardData.stats]
@@ -253,7 +233,7 @@ const DashboardPage = () => {
         }
       />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((card) => (
           <div
             key={card.title}
@@ -263,7 +243,7 @@ const DashboardPage = () => {
             <div className="absolute bottom-0 left-6 h-14 w-14 rounded-full bg-black/10 blur-xl"></div>
             <div className="relative flex items-start justify-between gap-3">
               <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${card.pillClass}`}>
-                Overview
+                Summary
               </span>
               <div className={`flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 ${card.iconBg}`}>
                 <card.icon className={`h-5 w-5 ${card.iconColor}`} />

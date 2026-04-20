@@ -1,0 +1,21 @@
+meta {
+  name: POST Create City
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/settings/cities
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "state_id": 1,
+    "name": "Chennai",
+    "code": "MAA"
+  }
+}

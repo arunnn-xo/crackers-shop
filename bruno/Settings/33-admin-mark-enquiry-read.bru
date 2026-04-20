@@ -1,0 +1,19 @@
+meta {
+  name: PUT Mark Enquiry Read
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/enquiries/1/read
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "is_read": true
+  }
+}

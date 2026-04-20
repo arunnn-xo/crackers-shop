@@ -1,0 +1,22 @@
+meta {
+  name: POST Create SEO Detail
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/settings/seo-details
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "page_name": "home",
+    "meta_title": "Crackers Shop",
+    "meta_description": "Festival crackers, gift boxes, and online booking.",
+    "meta_keywords": "crackers, fireworks, festival, diwali"
+  }
+}

@@ -1,0 +1,22 @@
+meta {
+  name: POST Create Category
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/categories
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "data_id": "CAT-999",
+    "name": "Festival Specials",
+    "image": "/uploads/categories/sample.png",
+    "sort_order": 1
+  }
+}

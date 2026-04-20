@@ -1,0 +1,12 @@
+meta {
+  name: DELETE Enquiry
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/settings/enquiries/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}

@@ -26,9 +26,12 @@ import AllOrdersPage from './pages/orders/AllOrdersPage';
 import TopCustomersPage from './pages/report/TopCustomersPage';
 import EnquiriesPage from './pages/report/EnquiriesPage';
 import BrandsPage from './pages/report/BrandsPage';
+import BrandFormPage from './pages/report/BrandFormPage';
 import SeoHeadingPage from './pages/seo/SeoHeadingPage';
 import SeoDetailsPage from './pages/seo/SeoDetailsPage';
+import SeoDetailFormPage from './pages/seo/SeoDetailFormPage';
 import BlogPage from './pages/seo/BlogPage';
+import BlogFormPage from './pages/seo/BlogFormPage';
 import GlobalSettingsPage from './pages/settings/GlobalSettingsPage';
 import ThemeSettingsPage from './pages/settings/ThemeSettingsPage';
 import TermsConditionsPage from './pages/settings/TermsConditionsPage';
@@ -80,11 +83,17 @@ function AppContent() {
           <Route path="/report/top-customers" element={<TopCustomersPage />} />
           <Route path="/report/enquiries" element={<EnquiriesPage />} />
           <Route path="/report/brands" element={<BrandsPage />} />
+          <Route path="/report/brands/new" element={<BrandFormPage />} />
+          <Route path="/report/brands/:brandId/edit" element={<BrandFormPage />} />
           
           {/* SEO Routes */}
           <Route path="/seo/heading" element={<SeoHeadingPage />} />
           <Route path="/seo/details" element={<SeoDetailsPage />} />
+          <Route path="/seo/details/new" element={<SeoDetailFormPage />} />
+          <Route path="/seo/details/:seoDetailId/edit" element={<SeoDetailFormPage />} />
           <Route path="/seo/blog" element={<BlogPage />} />
+          <Route path="/seo/blog/new" element={<BlogFormPage />} />
+          <Route path="/seo/blog/:blogId/edit" element={<BlogFormPage />} />
           
           {/* Settings Routes */}
           <Route path="/settings/global" element={<GlobalSettingsPage />} />

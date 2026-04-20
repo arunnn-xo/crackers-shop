@@ -1,0 +1,25 @@
+meta {
+  name: PUT Update Product
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/products/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+body:multipart-form {
+  category_id: 1
+  name: Flower Pot Deluxe Updated
+  price: 1300
+  sale_price: 1099
+  content_unit: 1 Box
+  stock_status: In Stock
+  description: Updated sample product from Bruno
+  sort_order: 2
+  is_active: 1
+  image: "C:\\replace-with-image\\product-updated.png"
+}

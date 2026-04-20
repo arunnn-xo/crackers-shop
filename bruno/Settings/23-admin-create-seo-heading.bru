@@ -1,0 +1,20 @@
+meta {
+  name: POST Create SEO Heading
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/settings/seo-headings
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "page_name": "home",
+    "heading": "Celebrate with the best crackers in town"
+  }
+}

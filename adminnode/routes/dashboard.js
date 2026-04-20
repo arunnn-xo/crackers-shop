@@ -17,7 +17,13 @@ router.get('/', async (req, res) => {
     const [[{ totalProducts }]] = await pool.query('SELECT COUNT(*) as totalProducts FROM products');
     const [[{ totalOrders }]] = await pool.query('SELECT COUNT(*) as totalOrders FROM orders');
     const [[{ totalCustomers }]] = await pool.query('SELECT COUNT(*) as totalCustomers FROM customers');
-    const [[{ totalIncome }]] = await pool.query('SELECT COALESCE(SUM(total), 0) as totalIncome FROM orders WHERE payment_status = "Paid"');
+    // totalRevenue (all orders sum)
+    const [[{ totalRevenue }]] = await pool.query('SELECT COALESCE(SUM(total), 0) as totalRevenue FROM orders');
+
+    // Screenshot metrics requirements
+    const [[{ todaysBilling, todaysOrders }]] = await pool.query('SELECT COALESCE(SUM(total), 0) as todaysBilling, COUNT(*) as todaysOrders FROM orders WHERE order_date = CURDATE()');
+    const [[{ pendingOrders }]] = await pool.query('SELECT COUNT(*) as pendingOrders FROM orders WHERE status = "Pending"');
+    const [[{ completedOrders }]] = await pool.query('SELECT COUNT(*) as completedOrders FROM orders WHERE status = "Complete" OR status = "Delivered"');
     
     const [storeConfig] = await pool.query('SELECT global_discount FROM store_config LIMIT 1');
     const globalDiscount = Number(storeConfig[0]?.global_discount || 0);
@@ -72,7 +78,7 @@ router.get('/', async (req, res) => {
     res.json({
       success: true,
       data: {
-        stats: { totalCategories, totalBanners, globalDiscount, totalProducts, totalOrders, totalCustomers, totalIncome },
+        stats: { totalCategories, totalBanners, globalDiscount, totalProducts, totalOrders, totalCustomers, totalRevenue, todaysBilling, todaysOrders, pendingOrders, completedOrders },
         revenueData,
         statusData,
         recentOrders,

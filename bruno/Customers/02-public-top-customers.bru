@@ -1,0 +1,18 @@
+meta {
+  name: GET Public Top Customers
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/Getcustomers/top
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}
+
+params:query {
+  start_date: 2026-04-01
+  end_date: 2026-04-30
+  limit: 10
+}

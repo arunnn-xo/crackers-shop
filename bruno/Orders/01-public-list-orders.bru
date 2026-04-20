@@ -1,0 +1,23 @@
+meta {
+  name: GET Public List Orders
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/Getorders
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}
+
+params:query {
+  status: Pending
+  type: BILLING
+  payment_status: Paid
+  start_date: 2026-04-01
+  end_date: 2026-04-30
+  search: ORD-
+  page: 1
+  limit: 20
+}

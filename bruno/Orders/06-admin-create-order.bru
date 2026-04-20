@@ -1,0 +1,32 @@
+meta {
+  name: POST Create Order
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/orders
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "customer_id": 1,
+    "order_type": "BILLING",
+    "shipping": 50,
+    "discount": 25,
+    "payment_status": "Pending",
+    "status": "Pending",
+    "notes": "Created from Bruno collection",
+    "items": [
+      {
+        "product_id": 1,
+        "quantity": 2,
+        "price": 500
+      }
+    ]
+  }
+}

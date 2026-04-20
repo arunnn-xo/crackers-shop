@@ -1,0 +1,21 @@
+meta {
+  name: POST Create Enquiry
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/settings/enquiries
+}
+
+headers {
+  content-type: application/json
+}
+
+body {
+  {
+    "name": "Bruno Visitor",
+    "email": "visitor@example.com",
+    "phone": "9876543210",
+    "message": "Need help choosing bulk crackers for an event."
+  }
+}

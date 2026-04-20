@@ -1,0 +1,19 @@
+meta {
+  name: POST Create State
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/settings/states
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "name": "Tamil Nadu"
+  }
+}

@@ -1,0 +1,21 @@
+meta {
+  name: PUT Update Area
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/settings/areas/1
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+  content-type: application/json
+}
+
+body {
+  {
+    "city_id": 1,
+    "name": "Anna Nagar",
+    "pincode": "600040"
+  }
+}
